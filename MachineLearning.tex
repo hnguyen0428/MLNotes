@@ -501,12 +501,60 @@
 			\begin{concept}{Extension of Latent-Factor Model}
 				\
 				\newline
-				How can we incorporate features about users and items, handle implicit feedback (e.g. users may not directly rate an item, but still interact with it by clicking on it), and handle change over time?
+				How can we incorporate features about users and items, handle implicit feedback, and handle change over time?
 				
 				\begin{enumerate}
 					\item {
 						\begin{concept}{Add in features}
+							$$f(u,i) = \alpha + \beta_u + \beta_i + (\gamma_u + \sum_{a \in A(u)} \rho_a) \cdot \gamma_i$$
+							This model looks similar to the original latent-factor model, except for the term $\sum_{a \in A(u)} \rho_a$.
 							
+							The vector $A(u)$ is a binary attributes vector for user $u$ that encodes at each entry whether the user expresses that attribute using 0 or 1.
+							Each term $\rho_a$ represents a parameter vector associated with attribute $a$. The parameter vector
+							essentially encodes "How does having this attribute impact $\gamma_u$?"
+							
+							We fit this model using Sum-squared Error as usual, that is:
+							$$\arg min_{\alpha, \beta, \gamma, \rho} \sum_{u,i \in train} (f(u,i) - R_{u,i})^2 + 
+							\lambda \Omega(\beta, \gamma)$$
+						\end{concept}
+					}
+					\item {
+						\begin{concept}{Implicit Feedback}
+							\
+							\newline
+							Users may not rate things, but still interact with the system (e.g. clicking on the items links).
+							Similar approach to adding in item features, we use binary attributes vector that encodes user's actions.
+							$$f(u,i) = \alpha + \beta_u + \beta_i + (\gamma_u + \frac{1}{||N(u)||} \sum_{a \in N(u)} \rho_a) \cdot \gamma_i$$
+							
+							Here, $N(u)$ represents a binary attributes vector for user $u$ that encodes at each entry the action the user
+							takes.
+							This time, we normalize by the magnitude of the actions vector to prevent the danger of
+							\begin{enumerate}
+								\item {
+									User might watch a lot of movies, so $\gamma_u$ might become very large. This could lead to the user
+									getting recommended any items.
+								}
+								\item {
+									User might click on a lot of links before watching a movie, same thing happens as in (a).
+								}
+							\end{enumerate}
+						
+							Again, we fit this the same way using Sum-squared Error.
+						\end{concept}
+					}
+					\item {
+						\begin{concept}{Change Over Time}
+							Rating data might change over time. We account for this by defining some parameters in our model
+							as a function of time, as such
+							$$f(u,i,t) = \alpha + \beta_u(t) + \beta_i(t) + \gamma_u(t) \cdot \gamma_i$$
+							
+							Our optimization task becomes
+							$$\arg min_{\alpha, \beta, \gamma} \sum_{u,i,t \in train} (f(u,i,t) - R_{u,i,t})^2 + 
+							\lambda_1 \Omega(\beta, \gamma) + \lambda_2 ||\gamma(t) - \gamma(t+\delta)||$$
+							
+							Note the regularizer term contains $\lambda_2 ||\gamma(t) - \gamma(t+\delta)||$. This is to
+							allow the parameters to change smoothly since the parameters should not change abruptly in
+							short periods of time.
 						\end{concept}
 					}
 				\end{enumerate}
