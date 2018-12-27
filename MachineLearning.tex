@@ -1,6 +1,7 @@
 \documentclass[12pt]{article}
  \usepackage[margin=1in]{geometry} 
 \usepackage{amsmath,amsthm,amssymb,amsfonts}
+\usepackage{graphicx}
 \usepackage{enumerate}
  
 \newcommand{\N}{\mathbb{N}}
@@ -20,6 +21,7 @@
 \author{Daniel Nguyen}
 \maketitle
  
+\section{General Data Science}
 \begin{concept}{Supervised Learning}
 	\
 	\begin{itemize}
@@ -162,6 +164,9 @@
 		\item {
 			The gradient of the cost function with respect to weight $j$ is given by
 			$$\frac{\partial E(\boldsymbol{\theta})}{\partial \theta_j} = - \sum_{n=1}^{N} (t^n - y^n) x_j^n$$
+		}
+		\item {
+			Visualized as drawing a line that separates two sets of points.
 		}
 		\item {
 			Tend to overfit with small amount of data
@@ -562,5 +567,163 @@
 		}
 	\end{itemize}
 \end{concept}
+
+
+\section{Deep Learning}
+\begin{concept}{Neural Network}
+	\
+	\begin{figure}[!htb]
+		\centering\includegraphics[width=0.5\linewidth]{NeuralNet.png}
+		\centering\caption{A simple neural network}
+		\label{fig1}
+	\end{figure}
+	\begin{itemize}
+		\item{
+			\begin{concept}{Forward Propagation}
+				\ \newline
+				A series of steps taken by the network to get from inputs to outputs.
+				
+				Starting with the input $x$, the network computes the net input to the output unit, by calculating the weighted sum
+				$$a_j = \sum_{i} w_{ij} x_i$$
+				where $w_{ij}$ is the weight from input unit $i$ to hidden unit $j$ and $x_i$ is the input unit $i$.
+				
+				The hidden layer then applies an activation function $h$ to the weighted sum $a_j$, which gives the activated values $h(a_j)$ at the hidden layer.
+				$$h_j = h(a_j)$$
+				
+				The activated values at the hidden layer are now the input values to the output layer.
+				
+				The outputs are computed in a similar manner by first computing the weighted sum.
+				$$a_k = \sum_{j} w_{jk} z_j$$
+				where $z_j = h(a_j)$, the activated value of hidden unit $j$ and $w_jk$ is the weight from hidden unit $j$ to output unit $k$.
+				
+				The activated outputs are then computed by applying an output activation function, called $y$, to the weighted sum.
+				$$y_k = y(a_k)$$
+
+			\end{concept}
+		}
+		\item{
+			\begin{concept}{Backpropagation}
+				\ \newline
+				A series of steps taken by the network to calculate the gradients at each layer starting from the outputs.
+				
+				The outputs at the output layer are used to calculate the gradients at the hidden layer, and the gradients at the hidden layer are used to calculate the gradients at the input layer.
+				
+				What are we taking the gradients of? \textbf{The gradients of the loss function $E$ with respect to the weights.}
+				
+				Why? \textbf{Because we want to update the weights such that they move in the direction that would minimize the loss function (i.e. Gradient Descent).}
+				
+				At each layer, we want to calculate the gradient $\frac{\partial E}{\partial w_{ij}}$, which is the same as the product of the delta of the next layer's unit $j$ and the input unit $i$ \textbf{from that layer to the next layer}.
+				$$\frac{\partial E}{\partial w_{ij}} = - \delta_j z_i$$
+
+				If $j$ is an output unit, $\delta_j = (t_j - y_j)$.\\
+				If $j$ is a hidden unit, $\delta_j = h'(a_j) \sum_{k} \delta_k w_{jk}$, where $h'$ is the derivative of the hidden activation function with respect to the weighted sum $a_j$. 
+				
+				We can see that we have a recursive definition of $delta$ since each $delta$ is dependent on the next layer's $delta$ values.
+			\end{concept}
+		}
+		\item{
+			\begin{concept}{Update Rule}
+				\ \newline
+				At each layer, the weight is updated using the following equation
+				$$w_{ij} = w_{ij} - \alpha \frac{\partial E}{\partial w_{ij}}$$
+				or
+				$$w_{ij} = w_{ij} + \alpha \delta_j z_i$$
+				where $\alpha$ is the learning rate.
+				
+				Assume we have a neural network with 3 layers as in Figure \ref{fig1} with input unit labeled as $i$, hidden unit labeled as $j$, and output unit labeled as $k$, the update rule at the hidden layer is: 
+				$$w_{jk} = w_{jk} + \alpha \delta_k z_j$$
+				$$w_{jk} = w_{jk} + \alpha (t_k - y_k) z_j$$
+				And the update rule at the input layer is:
+				$$w_{ij} = w_{ij} + \alpha \delta_j z_i$$
+				or in the unraveled form:
+				$$w_{ij} = w_{ij} + \alpha \cdot h'(a_j) \sum_{k} \delta_k w_{jk}$$
+				$$w_{ij} = w_{ij} + \alpha \cdot h'(a_j) \sum_{k} (t_k - y_k) w_{jk}$$
+			\end{concept}
+		}
+		\item{
+			\begin{concept}{Steps to training a Neural Network}
+				\
+				\begin{enumerate}
+					\item{
+						Forward Propagation to calculate the outputs.
+					}
+					\item{
+						Backpropagation using the outputs to calculate the gradients.
+					}
+					\item{
+						Update weights using the gradients calculated.
+					}
+					\item{
+						Repeat 1 through 3 until convergence (loss stops decreasing).
+					}
+				\end{enumerate}
+			\end{concept}
+		}
+	\end{itemize}
+\end{concept}
+
+\begin{concept}{Convolutional Neural Network}
+	\
+	\begin{itemize}
+		\item{
+			\begin{concept}{Why Convolution Neural Network?}
+				\
+				\begin{itemize}
+					\item{
+						Often used to extract features from images.
+					}
+					\item{
+						Relies on the observation that image's nearby pixels are dependent on each other.
+					}
+					\item{
+						Achieves translational invariance. Objects in the image are independent of where they are placed in the image.
+					}
+					\item{
+						Objects are made of parts. The deeper the CNN goes, the more complex features it could extract.
+					}
+					\item{
+						Resembles the neuroscience concept of \textbf{receptive fields} in the sense that the neurons are stimulated by a restricted region in the image.
+					}
+				\end{itemize}
+			\end{concept}
+		}
+		\item{
+			\begin{concept}{Architecture of a CNN}
+				\
+				\begin{itemize}
+					\item{
+						\textbf{Convolutional Layers}
+						
+						The core of CNN. The layer's weights are filters (or kernels). During the forward propagation, the filters are convolved across the width and height of the input volume.
+						
+						The convolution is done by computing the dot product between the 2-dimensional patch of the input and the kernel.
+					}
+					\item{
+						\textbf{Pooling Layers}
+						
+						A form of down sampling the input. The pooling layer often used is max pooling, which uses the maximally activated neuron of each patch as the output.
+						
+						Pooling helps achieve translational invariance.
+					}
+					\item{
+						\textbf{Activation Layers}
+						
+						Applies non-linearity to the network. The activation function often used is ReLU. Some other functions are Tanh and Sigmoid.
+					}
+					\item{
+						\textbf{Fully connected layers}
+						
+						Goes at the end after convolutional layers and pooling layers. This is the "high-level reasoning" layer, which learns non-linear combinations of the high-level features that were output from the previous layers. What it essentially provides to the network is that it learns what features are important from the feature space input.
+						
+						The fully connected layer is often a linear layer, which has the output
+						$$y = xW^T + b$$
+						where $W$ is the weight matrix of dimension $(output\_size, input\_size)$, and $b$ is the bias weight of dimension $(output\_size)$.
+					}
+				\end{itemize}
+			\end{concept}
+		}
+	\end{itemize}
+\end{concept}
+
 
 \end{document}
